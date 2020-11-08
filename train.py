@@ -25,7 +25,7 @@ def get_args():
 
     # Add data arguments
     parser.add_argument(
-        '--data', default='bpe_dropout/prepared_data', help='path to data directory')
+        '--data', default='baseline/prepared_data', help='path to data directory')
     parser.add_argument('--source-lang', default='de', help='source language')
     parser.add_argument('--target-lang', default='en', help='target language')
     parser.add_argument('--max-tokens', default=None, type=int,
