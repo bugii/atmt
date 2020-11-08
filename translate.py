@@ -16,15 +16,20 @@ def get_args():
     """ Defines generation-specific hyper-parameters. """
     parser = argparse.ArgumentParser('Sequence to Sequence Model')
     parser.add_argument('--cuda', default=False, help='Use a GPU')
-    parser.add_argument('--seed', default=42, type=int, help='pseudo random number generator seed')
+    parser.add_argument('--seed', default=42, type=int,
+                        help='pseudo random number generator seed')
 
     # Add data arguments
-    parser.add_argument('--data', default='indomain/prepared_data', help='path to data directory')
-    parser.add_argument('--checkpoint-path', default='checkpoints/checkpoint_best.pt', help='path to the model file')
-    parser.add_argument('--batch-size', default=None, type=int, help='maximum number of sentences in a batch')
+    parser.add_argument('--data', default='baseline/prepared_data',
+                        help='path to data directory')
+    parser.add_argument(
+        '--checkpoint-path', default='checkpoints_baseline/checkpoint_best.pt', help='path to the model file')
+    parser.add_argument('--batch-size', default=None, type=int,
+                        help='maximum number of sentences in a batch')
     parser.add_argument('--output', default='model_translations.txt', type=str,
                         help='path to the output file destination')
-    parser.add_argument('--max-len', default=25, type=int, help='maximum length of generated sequence')
+    parser.add_argument('--max-len', default=25, type=int,
+                        help='maximum length of generated sequence')
 
     return parser.parse_args()
 
@@ -33,17 +38,23 @@ def main(args):
     """ Main translation function' """
     # Load arguments from checkpoint
     torch.manual_seed(args.seed)
-    state_dict = torch.load(args.checkpoint_path, map_location=lambda s, l: default_restore_location(s, 'cpu'))
-    args_loaded = argparse.Namespace(**{**vars(args), **vars(state_dict['args'])})
+    state_dict = torch.load(
+        args.checkpoint_path, map_location=lambda s, l: default_restore_location(s, 'cpu'))
+    args_loaded = argparse.Namespace(
+        **{**vars(args), **vars(state_dict['args'])})
     args_loaded.data = args.data
     args = args_loaded
     utils.init_logging(args)
 
     # Load dictionaries
-    src_dict = Dictionary.load(os.path.join(args.data, 'dict.{:s}'.format(args.source_lang)))
-    logging.info('Loaded a source dictionary ({:s}) with {:d} words'.format(args.source_lang, len(src_dict)))
-    tgt_dict = Dictionary.load(os.path.join(args.data, 'dict.{:s}'.format(args.target_lang)))
-    logging.info('Loaded a target dictionary ({:s}) with {:d} words'.format(args.target_lang, len(tgt_dict)))
+    src_dict = Dictionary.load(os.path.join(
+        args.data, 'dict.{:s}'.format(args.source_lang)))
+    logging.info('Loaded a source dictionary ({:s}) with {:d} words'.format(
+        args.source_lang, len(src_dict)))
+    tgt_dict = Dictionary.load(os.path.join(
+        args.data, 'dict.{:s}'.format(args.target_lang)))
+    logging.info('Loaded a target dictionary ({:s}) with {:d} words'.format(
+        args.target_lang, len(tgt_dict)))
 
     # Load dataset
     test_dataset = Seq2SeqDataset(
@@ -61,7 +72,8 @@ def main(args):
         model = model.cuda()
     model.eval()
     model.load_state_dict(state_dict['model'])
-    logging.info('Loaded a model from checkpoint {:s}'.format(args.checkpoint_path))
+    logging.info('Loaded a model from checkpoint {:s}'.format(
+        args.checkpoint_path))
     progress_bar = tqdm(test_loader, desc='| Generation', leave=False)
 
     # Iterate over the test set
@@ -69,9 +81,11 @@ def main(args):
     for i, sample in enumerate(progress_bar):
         with torch.no_grad():
             # Compute the encoder output
-            encoder_out = model.encoder(sample['src_tokens'], sample['src_lengths'])
+            encoder_out = model.encoder(
+                sample['src_tokens'], sample['src_lengths'])
             go_slice = \
-                torch.ones(sample['src_tokens'].shape[0], 1).fill_(tgt_dict.eos_idx).type_as(sample['src_tokens'])
+                torch.ones(sample['src_tokens'].shape[0], 1).fill_(
+                    tgt_dict.eos_idx).type_as(sample['src_tokens'])
             if args.cuda:
                 go_slice = utils.move_to_cuda(go_slice)
             prev_words = go_slice
@@ -85,12 +99,14 @@ def main(args):
             _, next_candidates = torch.topk(decoder_out, 2, dim=-1)
             best_candidates = next_candidates[:, :, 0]
             backoff_candidates = next_candidates[:, :, 1]
-            next_words = torch.where(best_candidates == tgt_dict.unk_idx, backoff_candidates, best_candidates)
+            next_words = torch.where(
+                best_candidates == tgt_dict.unk_idx, backoff_candidates, best_candidates)
             prev_words = torch.cat([go_slice, next_words], dim=1)
 
         # Segment into sentences
         decoded_batch = next_words.cpu().numpy()
-        output_sentences = [decoded_batch[row, :] for row in range(decoded_batch.shape[0])]
+        output_sentences = [decoded_batch[row, :]
+                            for row in range(decoded_batch.shape[0])]
         assert(len(output_sentences) == len(sample['id'].data))
 
         # Remove padding
