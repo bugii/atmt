@@ -70,7 +70,7 @@ def main(args):
     progress_bar = tqdm(test_loader, desc='| Generation', leave=False)
 
     # Iterate over the test set
-    all_hyps = {}
+    all_hyps = []
     for i, sample in enumerate(progress_bar):
 
         # Create a beam search object or every input sentence in batch
@@ -185,7 +185,9 @@ def main(args):
                 search.prune()
 
         # Segment into sentences
-        best_sents = torch.stack([search.get_best()[1].sequence[1:].cpu() for search in searches])
+        # best_sents = torch.stack([search.get_best()[1].sequence[1:].cpu() for search in searches])
+        best_sents = torch.stack(
+            [best[1].sequence[1:].cpu() for search in searches for best in search.get_n_best(3)])
         decoded_batch = best_sents.numpy()
 
         output_sentences = [decoded_batch[row, :] for row in range(decoded_batch.shape[0])]
@@ -204,14 +206,15 @@ def main(args):
         output_sentences = [tgt_dict.string(sent) for sent in output_sentences]
 
         for ii, sent in enumerate(output_sentences):
-            all_hyps[int(sample['id'].data[ii])] = sent
-
+            # all_hyps[int(sample['id'].data[ii])] = sent
+            # all_hyps[ii] = sent
+            all_hyps.append(sent)
 
     # Write to file
     if args.output is not None:
         with open(args.output, 'w') as out_file:
-            for sent_id in range(len(all_hyps.keys())):
-                out_file.write(all_hyps[sent_id] + '\n')
+            for sent in all_hyps:
+                out_file.write(sent + '\n')
 
 
 if __name__ == '__main__':
