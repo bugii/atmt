@@ -1,0 +1,21 @@
+sh postprocess_asg4.sh model_translations_beam_1.txt model_translations_beam_1.out en
+sh postprocess_asg4.sh model_translations_beam_2.txt model_translations_beam_2.out en
+sh postprocess_asg4.sh model_translations_beam_3.txt model_translations_beam_3.out en
+sh postprocess_asg4.sh model_translations_beam_4.txt model_translations_beam_4.out en
+sh postprocess_asg4.sh model_translations_beam_5.txt model_translations_beam_5.out en
+sh postprocess_asg4.sh model_translations_beam_6.txt model_translations_beam_6.out en
+sh postprocess_asg4.sh model_translations_beam_7.txt model_translations_beam_7.out en
+sh postprocess_asg4.sh model_translations_beam_8.txt model_translations_beam_8.out en
+sh postprocess_asg4.sh model_translations_beam_9.txt model_translations_beam_9.out en
+sh postprocess_asg4.sh model_translations_beam_10.txt model_translations_beam_10.out en
+
+cat model_translations_beam_1.out | sacrebleu data_asg4/raw_data/test.en
+cat model_translations_beam_2.out | sacrebleu data_asg4/raw_data/test.en
+cat model_translations_beam_3.out | sacrebleu data_asg4/raw_data/test.en
+cat model_translations_beam_4.out | sacrebleu data_asg4/raw_data/test.en
+cat model_translations_beam_5.out | sacrebleu data_asg4/raw_data/test.en
+cat model_translations_beam_6.out | sacrebleu data_asg4/raw_data/test.en
+cat model_translations_beam_7.out | sacrebleu data_asg4/raw_data/test.en
+cat model_translations_beam_8.out | sacrebleu data_asg4/raw_data/test.en
+cat model_translations_beam_9.out | sacrebleu data_asg4/raw_data/test.en
+cat model_translations_beam_10.out | sacrebleu data_asg4/raw_data/test.en
